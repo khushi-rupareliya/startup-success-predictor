@@ -51,9 +51,9 @@ model = joblib.load("startup_success_model.pkl")
 # --------------------------------------------------
 # Header Section
 # --------------------------------------------------
-st.markdown('<p class="main-title">🚀 Startup Success Prediction System</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Predict acquisition probability using funding and growth indicators.</p>', unsafe_allow_html=True)
-st.write("")
+st.title("🚀 Startup Success Prediction System")
+st.caption("Predict acquisition probability using funding and growth indicators.")
+st.divider
 
 # --------------------------------------------------
 # Layout
@@ -130,3 +130,4 @@ st.sidebar.write("""
 
 st.sidebar.write("---")
 st.sidebar.caption("Developed for Capstone Project")
+
