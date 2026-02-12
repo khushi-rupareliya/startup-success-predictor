@@ -53,7 +53,7 @@ model = joblib.load("startup_success_model.pkl")
 # --------------------------------------------------
 st.title("🚀 Startup Success Prediction System")
 st.caption("Predict acquisition probability using funding and growth indicators.")
-st.divider
+st.divider()
 
 # --------------------------------------------------
 # Layout
@@ -130,4 +130,5 @@ st.sidebar.write("""
 
 st.sidebar.write("---")
 st.sidebar.caption("Developed for Capstone Project")
+
 
