@@ -1,10 +1,10 @@
 import streamlit as st
 import joblib
-import numpy as np
 import pandas as pd
+import numpy as np
 
 # --------------------------------------------------
-# Page Configuration
+# Page Config
 # --------------------------------------------------
 st.set_page_config(
     page_title="Startup Success Predictor",
@@ -13,18 +13,17 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Load Model and Feature List
+# Load Model & Feature List
 # --------------------------------------------------
 try:
     model = joblib.load("startup_success_model.pkl")
     feature_list = joblib.load("model_features.pkl")
 except Exception:
-    st.error("❌ Error loading model files. Check .pkl files.")
+    st.error("❌ Error loading model files. Ensure both .pkl files exist.")
     st.stop()
 
-# Safety check
 if not hasattr(model, "predict"):
-    st.error("❌ Loaded model file is not a valid trained model.")
+    st.error("❌ Loaded file is not a trained model.")
     st.stop()
 
 # --------------------------------------------------
@@ -35,7 +34,7 @@ st.caption("AI-powered startup acquisition probability estimator.")
 st.divider()
 
 # --------------------------------------------------
-# User Inputs (Core Inputs Only)
+# Core Financial Inputs
 # --------------------------------------------------
 col1, col2 = st.columns(2)
 
@@ -53,14 +52,30 @@ with col2:
     funding_rounds = st.number_input("Funding Rounds", min_value=0)
     is_top500 = st.selectbox("Recognized as Top 500 Startup?", ["No", "Yes"])
 
-# Extra Added Features
+# --------------------------------------------------
+# Startup Profile Section
+# --------------------------------------------------
 st.subheader("📊 Startup Profile")
 
 team_size = st.number_input("Team Size", min_value=1)
 usp_defined = st.selectbox("USP Clearly Defined?", ["No", "Yes"])
-industry_type = st.selectbox("Industry Type", ["Software", "Web", "Mobile", "Enterprise", "Advertising", "GamesVideo", "Ecommerce", "Biotech", "Consulting", "Other"])
-market_size = st.selectbox("Market Size", ["Small", "Medium"])
-startup_stage = st.selectbox("Startup Stage", ["MVP", "Revenue", "Scaling"])
+
+industry_type = st.selectbox(
+    "Industry Type",
+    ["software", "web", "mobile", "enterprise",
+     "advertising", "gamesvideo", "ecommerce",
+     "biotech", "consulting", "othercategory"]
+)
+
+market_size = st.selectbox(
+    "Market Size",
+    ["Small", "Medium", "Large"]
+)
+
+startup_stage = st.selectbox(
+    "Startup Stage",
+    ["MVP", "Revenue", "Scaling"]
+)
 
 # Convert binary fields
 is_top500_value = 1 if is_top500 == "Yes" else 0
@@ -71,10 +86,10 @@ usp_defined_value = 1 if usp_defined == "Yes" else 0
 # --------------------------------------------------
 if st.button("🔍 Predict Startup Outcome"):
 
-    # Create empty feature dictionary
+    # Initialize all features as 0
     input_dict = dict.fromkeys(feature_list, 0)
 
-    # Fill core numeric values
+    # Fill numeric core features
     input_dict["relationships"] = relationships
     input_dict["funding_total_usd"] = funding_total_usd
     input_dict["age_last_milestone_year"] = age_last_milestone_year
@@ -88,18 +103,19 @@ if st.button("🔍 Predict Startup Outcome"):
     input_dict["team_size"] = team_size
     input_dict["usp_defined"] = usp_defined_value
 
-    # Handle dummy variables safely
-    # Industry
-    industry_column = f"is_{industry_type.lower()}"
+    # Industry dummy handling
+    industry_column = f"is_{industry_type}"
     if industry_column in input_dict:
         input_dict[industry_column] = 1
 
-    # Market Size
-    market_column = f"market_size_{market_size}"
-    if market_column in input_dict:
-        input_dict[market_column] = 1
+    # Market Size dummy handling
+    if market_size == "Medium" and "market_size_Medium" in input_dict:
+        input_dict["market_size_Medium"] = 1
+    elif market_size == "Small" and "market_size_Small" in input_dict:
+        input_dict["market_size_Small"] = 1
+    # If Large → do nothing (base category)
 
-    # Startup Stage
+    # Startup Stage dummy handling
     stage_column = f"startup_stage_{startup_stage}"
     if stage_column in input_dict:
         input_dict[stage_column] = 1
@@ -116,14 +132,16 @@ if st.button("🔍 Predict Startup Outcome"):
 
     risk_score = 1 - probability
 
+    # --------------------------------------------------
+    # Display Results
+    # --------------------------------------------------
     st.write("---")
     st.subheader("📊 Prediction Result")
 
-    # Display probability
     st.metric("Startup Success Probability", f"{probability*100:.2f}%")
-    st.progress(min(int(probability*100), 100))
+    st.progress(min(int(probability * 100), 100))
 
-    # Risk Category
+    # Risk classification
     if probability >= 0.7:
         st.success("🟢 Strong Growth Potential")
         rating = "⭐⭐⭐⭐⭐"
@@ -137,17 +155,19 @@ if st.button("🔍 Predict Startup Outcome"):
     st.write(f"### ⭐ Startup Health Rating: {rating}")
     st.metric("Estimated Failure Risk", f"{risk_score*100:.2f}%")
 
-    st.info("Prediction is based on financial strength, milestones, investor backing, and startup profile indicators.")
+    st.info(
+        "Prediction is based on financial strength, milestones, investor backing, industry positioning, and startup stage."
+    )
 
     st.write("### 💡 Suggestions to Improve Success Probability")
 
     if probability < 0.7:
         st.write("- Improve funding stability and runway.")
-        st.write("- Increase measurable milestones.")
-        st.write("- Strengthen investor network.")
+        st.write("- Achieve more measurable milestones.")
+        st.write("- Strengthen investor participation.")
         st.write("- Clarify and strengthen USP.")
     else:
-        st.write("- Focus on scalable growth.")
+        st.write("- Focus on sustainable scaling.")
         st.write("- Optimize capital efficiency.")
         st.write("- Maintain strong investor relations.")
 
@@ -156,7 +176,7 @@ if st.button("🔍 Predict Startup Outcome"):
 # --------------------------------------------------
 st.sidebar.title("Project Overview")
 st.sidebar.write("""
-Random Forest Classifier trained on startup ecosystem data.
+Random Forest model trained on startup ecosystem data.
 """)
 
 st.sidebar.markdown("### Model Details")
