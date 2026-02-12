@@ -98,17 +98,47 @@ if st.button("🔍 Predict Startup Outcome"):
 
     prediction = model.predict(input_data)
     probability = model.predict_proba(input_data)[0][1]
+    risk_score = 1 - probability
 
     st.write("---")
 
-    if prediction[0] == 1:
-        st.success("✅ High Probability of Startup Success")
-        st.metric("Predicted Success Probability", f"{probability*100:.2f}%")
-        st.progress(min(int(probability*100), 100))
+    # 🎯 Main Probability Display
+    st.subheader("📊 Prediction Result")
+    st.metric("Startup Success Probability", f"{probability*100:.2f}%")
+    st.progress(min(int(probability*100), 100))
+
+    # 🚦 Risk Category
+    if probability >= 0.7:
+        st.success("🟢 Strong Growth Potential")
+        rating = "⭐⭐⭐⭐⭐"
+    elif probability >= 0.4:
+        st.warning("🟡 Moderate Risk – Needs Strategic Improvement")
+        rating = "⭐⭐⭐"
     else:
-        st.error("❌ High Risk of Startup Failure")
-        st.metric("Predicted Success Probability", f"{probability*100:.2f}%")
-        st.progress(min(int(probability*100), 100))
+        st.error("🔴 High Risk – Financial & Growth Concerns")
+        rating = "⭐⭐"
+
+    # ⭐ Startup Health Rating
+    st.write(f"### ⭐ Startup Health Rating: {rating}")
+
+    # 📉 Failure Risk
+    st.metric("Estimated Failure Risk", f"{risk_score*100:.2f}%")
+
+    # 🧠 Explanation Section
+    st.info("Prediction is based on funding strength, milestone achievements, investor participation, and growth indicators.")
+
+    # 💡 Improvement Suggestions
+    st.write("### 💡 Suggestions to Improve Success Probability")
+
+    if probability < 0.7:
+        st.write("- Increase funding stability and runway.")
+        st.write("- Achieve more measurable milestones.")
+        st.write("- Expand investor participation.")
+        st.write("- Strengthen strategic partnerships.")
+    else:
+        st.write("- Focus on sustainable scaling.")
+        st.write("- Optimize capital efficiency.")
+        st.write("- Maintain investor confidence and milestone growth.")
 
 # --------------------------------------------------
 # Sidebar
@@ -130,5 +160,6 @@ st.sidebar.write("""
 
 st.sidebar.write("---")
 st.sidebar.caption("Developed for Capstone Project")
+
 
 
