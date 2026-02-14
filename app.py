@@ -2,6 +2,7 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 # --------------------------------------------------
 # Page Config
@@ -13,7 +14,21 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Load Model & Feature List
+# Custom Styling
+# --------------------------------------------------
+st.markdown("""
+    <style>
+    .stMetric {
+        font-size:18px !important;
+    }
+    .main {
+        background-color: #f9fbfd;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# --------------------------------------------------
+# Load Model & Features
 # --------------------------------------------------
 try:
     model = joblib.load("startup_success_model.pkl")
@@ -30,7 +45,7 @@ if not hasattr(model, "predict"):
 # Header
 # --------------------------------------------------
 st.title("🚀 Startup Success Prediction System")
-st.caption("AI-powered startup acquisition probability estimator.")
+st.caption("AI-powered startup acquisition probability estimator")
 st.divider()
 
 # --------------------------------------------------
@@ -53,7 +68,7 @@ with col2:
     is_top500 = st.selectbox("Recognized as Top 500 Startup?", ["No", "Yes"])
 
 # --------------------------------------------------
-# Startup Profile Section
+# Startup Profile
 # --------------------------------------------------
 st.subheader("📊 Startup Profile")
 
@@ -67,29 +82,21 @@ industry_type = st.selectbox(
      "biotech", "consulting", "othercategory"]
 )
 
-market_size = st.selectbox(
-    "Market Size",
-    ["Small", "Medium", "Large"]
-)
+market_size = st.selectbox("Market Size", ["Small", "Medium", "Large"])
+startup_stage = st.selectbox("Startup Stage", ["MVP", "Revenue", "Scaling"])
 
-startup_stage = st.selectbox(
-    "Startup Stage",
-    ["MVP", "Revenue", "Scaling"]
-)
-
-# Convert binary fields
+# Convert binary
 is_top500_value = 1 if is_top500 == "Yes" else 0
 usp_defined_value = 1 if usp_defined == "Yes" else 0
 
 # --------------------------------------------------
-# Prediction
+# Prediction Button
 # --------------------------------------------------
 if st.button("🔍 Predict Startup Outcome"):
 
-    # Initialize all features as 0
     input_dict = dict.fromkeys(feature_list, 0)
 
-    # Fill numeric core features
+    # Numeric Inputs
     input_dict["relationships"] = relationships
     input_dict["funding_total_usd"] = funding_total_usd
     input_dict["age_last_milestone_year"] = age_last_milestone_year
@@ -103,69 +110,96 @@ if st.button("🔍 Predict Startup Outcome"):
     input_dict["team_size"] = team_size
     input_dict["usp_defined"] = usp_defined_value
 
-    # Industry dummy handling
+    # Industry Encoding
     industry_column = f"is_{industry_type}"
     if industry_column in input_dict:
         input_dict[industry_column] = 1
 
-    # Market Size dummy handling
+    # Market Size Encoding
     if market_size == "Medium" and "market_size_Medium" in input_dict:
         input_dict["market_size_Medium"] = 1
     elif market_size == "Small" and "market_size_Small" in input_dict:
         input_dict["market_size_Small"] = 1
-    # If Large → do nothing (base category)
 
-    # Startup Stage dummy handling
+    # Startup Stage Encoding
     stage_column = f"startup_stage_{startup_stage}"
     if stage_column in input_dict:
         input_dict[stage_column] = 1
 
-    # Convert to DataFrame in correct order
     input_df = pd.DataFrame([input_dict])
 
     try:
         prediction = model.predict(input_df)[0]
         probability = model.predict_proba(input_df)[0][1]
     except Exception:
-        st.error("❌ Prediction failed. Check feature alignment.")
+        st.error("❌ Prediction failed. Feature mismatch detected.")
         st.stop()
 
     risk_score = 1 - probability
 
     # --------------------------------------------------
-    # Display Results
+    # Results Section
     # --------------------------------------------------
     st.write("---")
-    st.subheader("📊 Prediction Result")
+    st.subheader("📊 Prediction Results")
 
-    st.metric("Startup Success Probability", f"{probability*100:.2f}%")
-    st.progress(min(int(probability * 100), 100))
+    colA, colB = st.columns(2)
 
-    # Risk classification
-    if probability >= 0.7:
-        st.success("🟢 Strong Growth Potential")
-        rating = "⭐⭐⭐⭐⭐"
-    elif probability >= 0.4:
-        st.warning("🟡 Moderate Risk – Needs Strategic Improvement")
-        rating = "⭐⭐⭐"
+    with colA:
+        st.metric("Startup Success Probability", f"{probability*100:.2f}%")
+        st.progress(min(int(probability * 100), 100))
+
+    with colB:
+        st.metric("Estimated Failure Risk", f"{risk_score*100:.2f}%")
+
+    # Investor Grade
+    confidence = probability * 100
+
+    if confidence >= 85:
+        st.success("🏆 Investor Grade: A+")
+    elif confidence >= 70:
+        st.success("✅ Investor Grade: A")
+    elif confidence >= 50:
+        st.warning("⚠ Investor Grade: B")
     else:
-        st.error("🔴 High Risk – Financial & Growth Concerns")
-        rating = "⭐⭐"
+        st.error("❌ Investor Grade: C")
 
-    st.write(f"### ⭐ Startup Health Rating: {rating}")
-    st.metric("Estimated Failure Risk", f"{risk_score*100:.2f}%")
+    # --------------------------------------------------
+    # Probability Chart
+    # --------------------------------------------------
+    st.write("### 📈 Probability Breakdown")
 
-    st.info(
-        "Prediction is based on financial strength, milestones, investor backing, industry positioning, and startup stage."
-    )
+    fig, ax = plt.subplots()
+    ax.bar(["Success", "Failure"], [probability, risk_score])
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("Probability")
+    st.pyplot(fig)
 
-    st.write("### 💡 Suggestions to Improve Success Probability")
+    # --------------------------------------------------
+    # Feature Importance (Explainable AI)
+    # --------------------------------------------------
+    if hasattr(model, "feature_importances_"):
+        st.write("### 🔍 Top 10 Influential Features")
+
+        importances = model.feature_importances_
+
+        importance_df = pd.DataFrame({
+            "Feature": feature_list,
+            "Importance": importances
+        }).sort_values(by="Importance", ascending=False).head(10)
+
+        st.dataframe(importance_df, use_container_width=True)
+
+    # --------------------------------------------------
+    # Suggestions
+    # --------------------------------------------------
+    st.write("### 💡 Strategic Suggestions")
 
     if probability < 0.7:
-        st.write("- Improve funding stability and runway.")
-        st.write("- Achieve more measurable milestones.")
-        st.write("- Strengthen investor participation.")
-        st.write("- Clarify and strengthen USP.")
+        st.write("- Improve funding stability and extend runway.")
+        st.write("- Increase measurable milestones.")
+        st.write("- Strengthen investor backing.")
+        st.write("- Clearly define and communicate USP.")
     else:
         st.write("- Focus on sustainable scaling.")
         st.write("- Optimize capital efficiency.")
@@ -174,16 +208,17 @@ if st.button("🔍 Predict Startup Outcome"):
 # --------------------------------------------------
 # Sidebar
 # --------------------------------------------------
-st.sidebar.title("Project Overview")
+st.sidebar.title("📘 Project Overview")
 st.sidebar.write("""
-Random Forest model trained on startup ecosystem data.
+Machine Learning based Startup Success Prediction System.
 """)
 
-st.sidebar.markdown("### Model Details")
+st.sidebar.markdown("### 🧠 Model Details")
 st.sidebar.write("""
 - Algorithm: Random Forest  
 - Features Used: 41  
 - Accuracy: ~80%  
+- Explainable AI Enabled  
 """)
 
-st.sidebar.caption("Developed for Capstone Project")
+st.sidebar.caption("Developed for Capstone Project 🚀")
