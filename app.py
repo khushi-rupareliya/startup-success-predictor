@@ -222,3 +222,4 @@ st.sidebar.write("""
 """)
 
 st.sidebar.caption("Developed for Capstone Project 🚀")
+
