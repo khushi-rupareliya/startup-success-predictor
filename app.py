@@ -34,7 +34,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Load Model & Features (SAFE)
+# Load Model & Features
 # --------------------------------------------------
 try:
     model = joblib.load("startup_success_model.pkl")
@@ -44,11 +44,27 @@ except Exception:
     st.stop()
 
 # --------------------------------------------------
+# Load Historical Dataset (For X-Ray Mode)
+# --------------------------------------------------
+df = pd.read_csv("startupdata.csv")
+successful_df = df[df["status"] == "acquired"]
+failed_df = df[df["status"] == "closed"]
+
+# --------------------------------------------------
 # Header
 # --------------------------------------------------
 st.title("🚀 Startup Success Prediction System")
 st.caption("AI-powered startup acquisition probability estimator")
 st.divider()
+
+# --------------------------------------------------
+# Mode Selector
+# --------------------------------------------------
+mode = st.radio(
+    "Select Analysis Mode",
+    ["🎯 Quick Prediction", "🩺 Full Startup X-Ray"],
+    horizontal=True
+)
 
 # --------------------------------------------------
 # Core Financial Inputs
@@ -87,7 +103,6 @@ industry_type = st.selectbox(
 market_size = st.selectbox("Market Size", ["Small", "Medium", "Large"])
 startup_stage = st.selectbox("Startup Stage", ["MVP", "Revenue", "Scaling"])
 
-# Binary Conversion
 is_top500_value = 1 if is_top500 == "Yes" else 0
 usp_defined_value = 1 if usp_defined == "Yes" else 0
 
@@ -98,7 +113,6 @@ if st.button("🔍 Predict Startup Outcome"):
 
     input_dict = dict.fromkeys(feature_list, 0)
 
-    # Numeric Inputs (SAFE – no removal)
     input_dict["relationships"] = relationships
     input_dict["funding_total_usd"] = funding_total_usd
     input_dict["age_last_milestone_year"] = age_last_milestone_year
@@ -112,17 +126,14 @@ if st.button("🔍 Predict Startup Outcome"):
     input_dict["team_size"] = team_size
     input_dict["usp_defined"] = usp_defined_value
 
-    # Industry Encoding
     industry_column = f"is_{industry_type}"
     if industry_column in input_dict:
         input_dict[industry_column] = 1
 
-    # Market Size Encoding
     market_column = f"market_size_{market_size}"
     if market_column in input_dict:
         input_dict[market_column] = 1
 
-    # Startup Stage Encoding
     stage_column = f"startup_stage_{startup_stage}"
     if stage_column in input_dict:
         input_dict[stage_column] = 1
@@ -139,118 +150,108 @@ if st.button("🔍 Predict Startup Outcome"):
     confidence = probability * 100
     risk_percent = risk_score * 100
 
-    st.divider()
-    st.subheader("📊 AI Investment Dashboard")
+    # ==================================================
+    # 🎯 QUICK PREDICTION MODE (UNCHANGED)
+    # ==================================================
+    if mode == "🎯 Quick Prediction":
 
-    colA, colB = st.columns(2)
+        st.divider()
+        st.subheader("📊 AI Investment Dashboard")
 
-    # --------------------------------------------------
-    # Gauge Chart
-    # --------------------------------------------------
-    with colA:
-        gauge = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=confidence,
-            number={'suffix': "%"},
-            title={'text': "Startup Success Score"},
-            gauge={
-                'axis': {'range': [0, 100]},
-                'bar': {'color': "#00F5A0"},
-                'steps': [
-                    {'range': [0, 40], 'color': "#3A0D0D"},
-                    {'range': [40, 70], 'color': "#3A330D"},
-                    {'range': [70, 100], 'color': "#0D3A22"}
-                ]
-            }
-        ))
-        gauge.update_layout(paper_bgcolor="#0E1117", font={'color': "white"})
-        st.plotly_chart(gauge, use_container_width=True)
+        colA, colB = st.columns(2)
 
-    # --------------------------------------------------
-    # Donut Chart
-    # --------------------------------------------------
-    with colB:
-        donut = go.Figure(data=[go.Pie(
-            labels=["Success Probability", "Failure Risk"],
-            values=[confidence, risk_percent],
-            hole=0.6,
-            marker=dict(colors=["#00F5A0", "#FF4B4B"])
-        )])
-        donut.update_layout(paper_bgcolor="#0E1117", font=dict(color="white"))
-        st.plotly_chart(donut, use_container_width=True)
+        with colA:
+            gauge = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=confidence,
+                number={'suffix': "%"},
+                title={'text': "Startup Success Score"},
+                gauge={
+                    'axis': {'range': [0, 100]},
+                    'bar': {'color': "#00F5A0"},
+                    'steps': [
+                        {'range': [0, 40], 'color': "#3A0D0D"},
+                        {'range': [40, 70], 'color': "#3A330D"},
+                        {'range': [70, 100], 'color': "#0D3A22"}
+                    ]
+                }
+            ))
+            gauge.update_layout(paper_bgcolor="#0E1117", font={'color': "white"})
+            st.plotly_chart(gauge, use_container_width=True)
 
-    # --------------------------------------------------
-    # Investor Grade
-    # --------------------------------------------------
-    if confidence >= 85:
-        st.success("🏆 Investor Grade: A+ | Exceptional Potential")
-    elif confidence >= 70:
-        st.success("✅ Investor Grade: A | Strong Growth Signals")
-    elif confidence >= 50:
-        st.warning("⚠ Investor Grade: B | Moderate Risk Profile")
-    else:
-        st.error("❌ Investor Grade: C | High Investment Risk")
+        with colB:
+            donut = go.Figure(data=[go.Pie(
+                labels=["Success Probability", "Failure Risk"],
+                values=[confidence, risk_percent],
+                hole=0.6,
+                marker=dict(colors=["#00F5A0", "#FF4B4B"])
+            )])
+            donut.update_layout(paper_bgcolor="#0E1117", font=dict(color="white"))
+            st.plotly_chart(donut, use_container_width=True)
 
-    # --------------------------------------------------
-    # Feature Importance
-    # --------------------------------------------------
-    if hasattr(model, "feature_importances_"):
+        if confidence >= 85:
+            st.success("🏆 Investor Grade: A+ | Exceptional Potential")
+        elif confidence >= 70:
+            st.success("✅ Investor Grade: A | Strong Growth Signals")
+        elif confidence >= 50:
+            st.warning("⚠ Investor Grade: B | Moderate Risk Profile")
+        else:
+            st.error("❌ Investor Grade: C | High Investment Risk")
 
-        st.markdown("### 🔍 Key Decision Drivers")
+    # ==================================================
+    # 🩺 FULL STARTUP X-RAY MODE (NEW)
+    # ==================================================
+    if mode == "🩺 Full Startup X-Ray":
 
-        importance_df = pd.DataFrame({
-            "Feature": feature_list,
-            "Importance": model.feature_importances_
-        }).sort_values(by="Importance", ascending=False).head(10)
+        st.divider()
+        st.subheader("🩺 Startup X-Ray Diagnostic Report")
 
-        fig = go.Figure(go.Bar(
-            x=importance_df["Importance"],
-            y=importance_df["Feature"],
-            orientation='h',
-            marker_color="#00F5A0"
-        ))
+        funding_percentile = (df["funding_total_usd"] < funding_total_usd).mean() * 100
+        milestone_percentile = (df["milestones"] < milestones).mean() * 100
+        relationships_percentile = (df["relationships"] < relationships).mean() * 100
 
-        fig.update_layout(
-            paper_bgcolor="#0E1117",
-            plot_bgcolor="#0E1117",
-            font=dict(color="white"),
-            yaxis=dict(autorange="reversed")
-        )
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Funding Percentile", f"{funding_percentile:.1f}%")
+        col2.metric("Milestone Percentile", f"{milestone_percentile:.1f}%")
+        col3.metric("Network Strength Percentile", f"{relationships_percentile:.1f}%")
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("### 📊 Comparison with Acquired Startups")
 
-    # --------------------------------------------------
-    # AI Strategic Insights
-    # --------------------------------------------------
-    st.markdown("### 🧠 AI Strategic Insights")
+        avg_success_funding = successful_df["funding_total_usd"].mean()
+        avg_success_milestones = successful_df["milestones"].mean()
+        avg_success_relationships = successful_df["relationships"].mean()
 
-    if confidence < 70:
-        st.write("• Increase funding depth and investor backing.")
-        st.write("• Accelerate milestone achievement frequency.")
-        st.write("• Improve capital efficiency and runway planning.")
-        st.write("• Strengthen unique value proposition.")
-    else:
-        st.write("• Strong funding-health indicators detected.")
-        st.write("• High investor engagement pattern.")
-        st.write("• Positioned for scalable market expansion.")
-        st.write("• Maintain capital discipline for long-term growth.")
+        if funding_total_usd < avg_success_funding:
+            st.error("🔴 Funding below acquired startup average.")
+        else:
+            st.success("🟢 Funding above acquired startup average.")
 
-    st.caption("Prediction powered by Random Forest ensemble learning across 41 engineered features.")
+        if milestones < avg_success_milestones:
+            st.error("🔴 Milestones below acquired startup average.")
+        else:
+            st.success("🟢 Strong milestone execution.")
 
-# --------------------------------------------------
-# Sidebar
-# --------------------------------------------------
-st.sidebar.title("📘 Project Overview")
-st.sidebar.write("""
-Machine Learning based Startup Success Prediction System.
-""")
+        if relationships < avg_success_relationships:
+            st.warning("🟡 Network relationships below acquired average.")
+        else:
+            st.success("🟢 Strong investor/network connectivity.")
 
-st.sidebar.markdown("### 🧠 Model Details")
-st.sidebar.write("""
-- Algorithm: Random Forest  
-- Features Used: 41  
-- Accuracy: ~80%  
-- Explainable AI Enabled  
-""")
+        st.markdown("### 🏦 Investor Readiness Assessment")
 
-st.sidebar.caption("Developed by Khushi Rupareliya 🚀")
+        if probability > 0.75 and funding_percentile > 60:
+            tier = "🟢 Growth Stage Investment Profile"
+        elif probability > 0.5:
+            tier = "🟡 Early Stage / Angel Investment Profile"
+        else:
+            tier = "🔴 High Risk / Pre-Validation Stage"
+
+        st.info(f"Investment Tier: {tier}")
+
+        st.markdown("### 📋 X-Ray Summary")
+        st.write(f"""
+        • Survival Probability: {confidence:.2f}%  
+        • Funding Strength Percentile: {funding_percentile:.1f}%  
+        • Execution Strength Percentile: {milestone_percentile:.1f}%  
+        • Network Strength Percentile: {relationships_percentile:.1f}%  
+        • Investment Classification: {tier}
+        """)
