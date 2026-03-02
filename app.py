@@ -98,8 +98,7 @@ st.sidebar.write("""
 🩺 Full Startup X-Ray  
 """)
 
-st.sidebar.markdown("---")
-st.sidebar.caption("Developed by Khushi Rupareliya 🚀")
+st.sidebar.markdown("---")
 
 # ==================================================
 # Main Header
@@ -185,8 +184,7 @@ if st.button("🔍 Run Analysis"):
     st.divider()
 
     # ==================================================
-    # 🎯 QUICK PREDICTION MODE
-    # ==================================================
+    # 🎯 QUICK PREDICTION MODE
     if navigation == "🎯 Quick Prediction":
 
         st.subheader("📊 Investment Dashboard")
