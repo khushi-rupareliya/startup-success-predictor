@@ -436,13 +436,13 @@ with tab5:
         col2.metric("Milestone Percentile", f"{milestone_percentile:.1f}%")
         col3.metric("Network Strength Percentile", f"{relationships_percentile:.1f}%")
 
-        st.markdown("### 🧭 Startup vs Acquired Startup Benchmark")
+st.markdown("### 🧭 Startup vs Acquired Startup Benchmark")
 
-        avg_success = [
+avg_success = [
     successful_df["funding_total_usd"].mean(),
     successful_df["milestones"].mean(),
     successful_df["relationships"].mean(),
-    successful_df["funding_rounds"].mean(),
+    successful_df["funding_rounds"].mean()
 ]
 
 startup_values = [
@@ -474,13 +474,6 @@ radar.add_trace(go.Scatterpolar(
     fill='toself',
     name="Acquired Startup Average"
 ))
-
-radar.update_layout(
-    polar=dict(radialaxis=dict(visible=True)),
-    showlegend=True,
-    paper_bgcolor="#0E1117",
-    font=dict(color="white")
-)
 
 st.plotly_chart(radar, use_container_width=True)
 
@@ -524,6 +517,7 @@ st.write(f"""
 • Network Strength Percentile: {relationships_percentile:.1f}%  
 • Investment Classification: {tier}
 """)
+
 
 
 
