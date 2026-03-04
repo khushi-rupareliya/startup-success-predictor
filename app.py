@@ -464,7 +464,7 @@ radar.update_layout(
 
 st.plotly_chart(radar, use_container_width=True)
 
-        st.markdown("### 📊 Comparison with Acquired Startups")
+st.markdown("### 📊 Comparison with Acquired Startups")
 
         avg_success_funding = successful_df["funding_total_usd"].mean()
         avg_success_milestones = successful_df["milestones"].mean()
@@ -504,5 +504,6 @@ st.plotly_chart(radar, use_container_width=True)
         • Network Strength Percentile: {relationships_percentile:.1f}%  
         • Investment Classification: {tier}
         """)
+
 
 
