@@ -209,42 +209,48 @@ with tab1:
         input_dict["team_size"] = team_size
         input_dict["usp_defined"] = usp_defined_value
 
+        # Industry Encoding
         industry_column = f"is_{industry_type.lower()}"
         if industry_column in input_dict:
             input_dict[industry_column] = 1
+
+        # Market Encoding
         market_column = f"market_size_{market_size}"
         if market_column in input_dict:
             input_dict[market_column] = 1
+
+        # Stage Encoding
         stage_column = f"startup_stage_{startup_stage}"
         if stage_column in input_dict:
             input_dict[stage_column] = 1
 
-    input_df = pd.DataFrame([input_dict])
+        input_df = pd.DataFrame([input_dict])
 
-    try:
-        probability = model.predict_proba(input_df)[0][1]
-    except Exception:
-        st.error("❌ Feature mismatch detected.")
-        st.stop()
+        try:
+            probability = model.predict_proba(input_df)[0][1]
+        except Exception:
+            st.error("❌ Feature mismatch detected.")
+            st.stop()
 
-    risk_score = 1 - probability
-    confidence = probability * 100
-    risk_percent = risk_score * 100
+        risk_score = 1 - probability
+        confidence = probability * 100
+        risk_percent = risk_score * 100
 
-# --------------------------------------------------
-# Startup Health Score
-# --------------------------------------------------
-funding_percentile = (df["funding_total_usd"] < funding_total_usd).mean() * 100
-milestone_percentile = (df["milestones"] < milestones).mean() * 100
-relationships_percentile = (df["relationships"] < relationships).mean() * 100
+        # --------------------------------------------------
+        # Startup Health Score
+        # --------------------------------------------------
+        funding_percentile = (df["funding_total_usd"] < funding_total_usd).mean() * 100
+        milestone_percentile = (df["milestones"] < milestones).mean() * 100
+        relationships_percentile = (df["relationships"] < relationships).mean() * 100
 
-health_score = (
-    0.4 * funding_percentile +
-    0.3 * milestone_percentile +
-    0.2 * relationships_percentile +
-    0.1 * confidence
-)
-st.metric("Startup Health Index", f"{health_score:.1f} / 100")
+        health_score = (
+            0.4 * funding_percentile +
+            0.3 * milestone_percentile +
+            0.2 * relationships_percentile +
+            0.1 * confidence
+        )
+
+        st.metric("Startup Health Index", f"{health_score:.1f} / 100")
 
 with tab2:
 
@@ -504,6 +510,7 @@ st.write(f"""
 • Network Strength Percentile: {relationships_percentile:.1f}%  
 • Investment Classification: {tier}
 """)
+
 
 
 
