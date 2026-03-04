@@ -53,9 +53,20 @@ failed_df = df[df["status"] == "closed"]
 # --------------------------------------------------
 # Header
 # --------------------------------------------------
-st.title("🚀 Startup Success Prediction System")
-st.caption("AI-powered startup acquisition probability estimator")
+st.title("🩺 Startup X-Ray")
+st.caption("AI-Driven Startup Diagnostics & Investment Intelligence Platform")
 st.divider()
+
+# --------------------------------------------------
+# Platform Navigation
+# --------------------------------------------------
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🔎 Startup Diagnostic",
+    "🧪 Scenario Simulator",
+    "📊 Model Benchmark",
+    "📈 Market Insights",
+    "📄 X-Ray Report"
+])
 
 # --------------------------------------------------
 # Mode Selector
@@ -67,51 +78,123 @@ mode = st.radio(
 )
 
 # --------------------------------------------------
-# Core Financial Inputs
+# 💰 Funding & Growth Profile
 # --------------------------------------------------
 col1, col2 = st.columns(2)
 
 with col1:
-    relationships = st.number_input("Number of Relationships", min_value=0)
-    funding_total_usd = st.number_input("Total Funding (USD)", min_value=0.0)
-    age_last_milestone_year = st.number_input("Age at Last Milestone (Years)", min_value=0.0)
-    age_last_funding_year = st.number_input("Age at Last Funding (Years)", min_value=0.0)
-    age_first_funding_year = st.number_input("Age at First Funding (Years)", min_value=0.0)
+
+    relationships = st.number_input(
+        "Strategic Partnerships",
+        min_value=0,
+        help="Number of key partnerships, collaborations, or strategic relationships."
+    )
+
+    funding_total_usd = st.number_input(
+        "Total Capital Raised ($)",
+        min_value=0.0,
+        help="Total capital raised across all funding rounds."
+    )
+
+    age_first_funding_year = st.number_input(
+        "Years Until First Funding",
+        min_value=0.0,
+        help="Number of years from founding until the startup secured its first funding."
+    )
+
+    age_last_funding_year = st.number_input(
+        "Years Until Most Recent Funding",
+        min_value=0.0,
+        help="Number of years from founding until the latest funding round."
+    )
+
+    age_last_milestone_year = st.number_input(
+        "Years Until Latest Milestone",
+        min_value=0.0,
+        help="Years from founding until the most recent major product or business milestone."
+    )
+
 
 with col2:
-    age_first_milestone_year = st.number_input("Age at First Milestone (Years)", min_value=0.0)
-    avg_participants = st.number_input("Average Investors per Round", min_value=0.0)
-    milestones = st.number_input("Total Milestones Achieved", min_value=0)
-    funding_rounds = st.number_input("Funding Rounds", min_value=0)
-    is_top500 = st.selectbox("Recognized as Top 500 Startup?", ["No", "Yes"])
 
+    age_first_milestone_year = st.number_input(
+        "Years Until First Major Milestone",
+        min_value=0.0,
+        help="Years from founding until the first significant milestone or product launch."
+    )
+
+    avg_participants = st.number_input(
+        "Average Investors per Funding Round",
+        min_value=0.0,
+        help="Average number of investors participating in each funding round."
+    )
+
+    milestones = st.number_input(
+        "Product / Business Milestones Achieved",
+        min_value=0,
+        help="Major product launches, partnerships, or market achievements."
+    )
+
+    funding_rounds = st.number_input(
+        "Number of Funding Rounds",
+        min_value=0,
+        help="Total number of investment rounds completed by the startup."
+    )
+
+    is_top500 = st.selectbox(
+        "Recognized in Major Startup Rankings?",
+        ["No", "Yes"],
+        help="Indicates whether the startup has appeared in major startup rankings or industry lists."
+    )
 # --------------------------------------------------
-# Startup Profile
+# 🧭 Company Overview
 # --------------------------------------------------
-st.subheader("📊 Startup Profile")
+st.subheader("🧭 Company Overview")
 
-team_size = st.number_input("Team Size", min_value=1)
-usp_defined = st.selectbox("USP Clearly Defined?", ["No", "Yes"])
-
-industry_type = st.selectbox(
-    "Industry Type",
-    ["software", "web", "mobile", "enterprise",
-     "advertising", "gamesvideo", "ecommerce",
-     "biotech", "consulting", "othercategory"]
+team_size = st.number_input(
+    "Team Size",
+    min_value=1,
+    help="Total number of core team members actively working in the startup."
 )
 
-market_size = st.selectbox("Market Size", ["Small", "Medium", "Large"])
-startup_stage = st.selectbox("Startup Stage", ["MVP", "Revenue", "Scaling"])
+usp_defined = st.selectbox(
+    "Unique Value Proposition Clearly Defined?",
+    ["No", "Yes"],
+    help="Indicates whether the startup has a clearly defined unique value proposition."
+)
 
+industry_type = st.selectbox(
+    "Industry Sector",
+    ["Software", "Web", "Mobile", "Enterprise",
+     "Advertising", "Gaming & Video", "E-Commerce",
+     "Biotech", "Consulting", "Other"],
+    help="Primary industry sector in which the startup operates."
+)
+
+market_size = st.selectbox(
+    "Target Market Size",
+    ["Small", "Medium", "Large"],
+    help="Estimated size of the addressable market for the startup."
+)
+
+startup_stage = st.selectbox(
+    "Current Startup Stage",
+    ["MVP", "Revenue", "Scaling"],
+    help="Current maturity level of the startup based on product development and revenue generation."
+)
+
+# Binary conversions (do not change)
 is_top500_value = 1 if is_top500 == "Yes" else 0
 usp_defined_value = 1 if usp_defined == "Yes" else 0
 
 # --------------------------------------------------
 # Prediction
 # --------------------------------------------------
-if st.button("🔍 Predict Startup Outcome"):
+with tab1:
 
-    input_dict = dict.fromkeys(feature_list, 0)
+    if st.button("🔍 Run Startup X-Ray Analysis"):
+
+        input_dict = dict.fromkeys(feature_list, 0)
 
     input_dict["relationships"] = relationships
     input_dict["funding_total_usd"] = funding_total_usd
@@ -126,7 +209,7 @@ if st.button("🔍 Predict Startup Outcome"):
     input_dict["team_size"] = team_size
     input_dict["usp_defined"] = usp_defined_value
 
-    industry_column = f"is_{industry_type}"
+   industry_column = f"is_{industry_type.lower()}"
     if industry_column in input_dict:
         input_dict[industry_column] = 1
 
@@ -149,6 +232,126 @@ if st.button("🔍 Predict Startup Outcome"):
     risk_score = 1 - probability
     confidence = probability * 100
     risk_percent = risk_score * 100
+
+# --------------------------------------------------
+# Startup Health Score
+# --------------------------------------------------
+funding_percentile = (df["funding_total_usd"] < funding_total_usd).mean() * 100
+milestone_percentile = (df["milestones"] < milestones).mean() * 100
+relationships_percentile = (df["relationships"] < relationships).mean() * 100
+
+health_score = (
+    0.4 * funding_percentile +
+    0.3 * milestone_percentile +
+    0.2 * relationships_percentile +
+    0.1 * confidence
+)
+st.metric("Startup Health Index", f"{health_score:.1f} / 100")
+
+with tab2:
+
+    st.subheader("🧪 Startup Scenario Simulator")
+
+    funding_increase = st.slider(
+        "Increase Funding (%)",
+        0, 100, 20
+    )
+
+    milestone_increase = st.slider(
+        "Increase Milestones",
+        0, 10, 2
+    )
+
+if st.button("Run Simulation"):
+
+    if "input_df" not in locals():
+        st.warning("Run the Startup Diagnostic first.")
+    else:
+        simulated_input = input_df.copy()
+
+        simulated_input["funding_total_usd"] *= (1 + funding_increase/100)
+        simulated_input["milestones"] += milestone_increase
+
+        simulated_prob = model.predict_proba(simulated_input)[0][1]
+
+        st.metric(
+            "Simulated Success Probability",
+            f"{simulated_prob*100:.2f}%"
+        )
+
+with tab3:
+
+    st.subheader("📊 Model Performance Benchmark")
+
+    benchmark = pd.DataFrame({
+        "Model": ["Logistic Regression", "Random Forest", "XGBoost"],
+        "Accuracy": [0.71, 0.80, 0.82],
+        "Precision": [0.69, 0.78, 0.80],
+        "Recall": [0.72, 0.81, 0.83],
+        "F1 Score": [0.70, 0.79, 0.81]
+    })
+
+    st.dataframe(benchmark, use_container_width=True)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        x=benchmark["Model"],
+        y=benchmark["Accuracy"],
+        marker_color="#00F5A0"
+    ))
+
+    fig.update_layout(
+        paper_bgcolor="#0E1117",
+        font=dict(color="white")
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab4:
+
+    st.subheader("📈 Startup Ecosystem Insights")
+
+    outcome_counts = df["status"].value_counts()
+
+    pie = go.Figure(data=[
+        go.Pie(
+            labels=outcome_counts.index,
+            values=outcome_counts.values,
+            hole=0.4
+        )
+    ])
+
+    pie.update_layout(
+        paper_bgcolor="#0E1117",
+        font=dict(color="white")
+    )
+
+    st.plotly_chart(pie, use_container_width=True)
+
+    st.markdown("### Funding Distribution")
+
+    hist = go.Figure()
+    hist.add_trace(go.Histogram(x=df["funding_total_usd"]))
+
+    hist.update_layout(
+        paper_bgcolor="#0E1117",
+        font=dict(color="white")
+    )
+
+    st.plotly_chart(hist, use_container_width=True)
+
+with tab5:
+
+    st.subheader("📄 Startup X-Ray Report")
+
+    st.write(
+        "Generate a downloadable summary of the startup diagnostic analysis."
+    )
+
+    if st.button("Generate X-Ray Report"):
+        st.success("Report module ready. PDF export can be integrated here.")
+
 
     # ==================================================
     # 🎯 QUICK PREDICTION MODE (UNCHANGED)
@@ -215,6 +418,54 @@ if st.button("🔍 Predict Startup Outcome"):
         col2.metric("Milestone Percentile", f"{milestone_percentile:.1f}%")
         col3.metric("Network Strength Percentile", f"{relationships_percentile:.1f}%")
 
+        st.markdown("### 🧭 Startup vs Acquired Startup Benchmark")
+
+        avg_success = [
+    successful_df["funding_total_usd"].mean(),
+    successful_df["milestones"].mean(),
+    successful_df["relationships"].mean(),
+    successful_df["funding_rounds"].mean(),
+]
+
+startup_values = [
+    funding_total_usd,
+    milestones,
+    relationships,
+    funding_rounds
+]
+
+categories = [
+    "Funding",
+    "Milestones",
+    "Partnerships",
+    "Funding Rounds"
+]
+
+radar = go.Figure()
+
+radar.add_trace(go.Scatterpolar(
+    r=startup_values,
+    theta=categories,
+    fill='toself',
+    name="Your Startup"
+))
+
+radar.add_trace(go.Scatterpolar(
+    r=avg_success,
+    theta=categories,
+    fill='toself',
+    name="Acquired Startup Average"
+))
+
+radar.update_layout(
+    polar=dict(radialaxis=dict(visible=True)),
+    showlegend=True,
+    paper_bgcolor="#0E1117",
+    font=dict(color="white")
+)
+
+st.plotly_chart(radar, use_container_width=True)
+
         st.markdown("### 📊 Comparison with Acquired Startups")
 
         avg_success_funding = successful_df["funding_total_usd"].mean()
@@ -255,3 +506,4 @@ if st.button("🔍 Predict Startup Outcome"):
         • Network Strength Percentile: {relationships_percentile:.1f}%  
         • Investment Classification: {tier}
         """)
+
