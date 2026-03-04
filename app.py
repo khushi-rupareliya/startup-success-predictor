@@ -470,40 +470,41 @@ avg_success_funding = successful_df["funding_total_usd"].mean()
 avg_success_milestones = successful_df["milestones"].mean()
 avg_success_relationships = successful_df["relationships"].mean()
 
-        if funding_total_usd < avg_success_funding:
-            st.error("🔴 Funding below acquired startup average.")
-        else:
-            st.success("🟢 Funding above acquired startup average.")
+    if funding_total_usd < avg_success_funding:
+        st.error("🔴 Funding below acquired startup average.")
+    else:
+        st.success("🟢 Funding above acquired startup average.")
 
-        if milestones < avg_success_milestones:
-            st.error("🔴 Milestones below acquired startup average.")
-        else:
-            st.success("🟢 Strong milestone execution.")
+    if milestones < avg_success_milestones:
+        st.error("🔴 Milestones below acquired startup average.")
+    else:
+        st.success("🟢 Strong milestone execution.")
 
-        if relationships < avg_success_relationships:
-            st.warning("🟡 Network relationships below acquired average.")
-        else:
-            st.success("🟢 Strong investor/network connectivity.")
+    if relationships < avg_success_relationships:
+        st.warning("🟡 Network relationships below acquired average.")
+    else:
+        st.success("🟢 Strong investor/network connectivity.")
 
-        st.markdown("### 🏦 Investor Readiness Assessment")
+    st.markdown("### 🏦 Investor Readiness Assessment")
 
-        if probability > 0.75 and funding_percentile > 60:
-            tier = "🟢 Growth Stage Investment Profile"
-        elif probability > 0.5:
-            tier = "🟡 Early Stage / Angel Investment Profile"
-        else:
-            tier = "🔴 High Risk / Pre-Validation Stage"
+    if probability > 0.75 and funding_percentile > 60:
+        tier = "🟢 Growth Stage Investment Profile"
+    elif probability > 0.5:
+        tier = "🟡 Early Stage / Angel Investment Profile"
+    else:
+        tier = "🔴 High Risk / Pre-Validation Stage"
 
-        st.info(f"Investment Tier: {tier}")
+    st.info(f"Investment Tier: {tier}")
 
-        st.markdown("### 📋 X-Ray Summary")
-        st.write(f"""
-        • Survival Probability: {confidence:.2f}%  
-        • Funding Strength Percentile: {funding_percentile:.1f}%  
-        • Execution Strength Percentile: {milestone_percentile:.1f}%  
-        • Network Strength Percentile: {relationships_percentile:.1f}%  
-        • Investment Classification: {tier}
-        """)
+    st.markdown("### 📋 X-Ray Summary")
+    st.write(f"""
+    • Survival Probability: {confidence:.2f}%  
+    • Funding Strength Percentile: {funding_percentile:.1f}%  
+    • Execution Strength Percentile: {milestone_percentile:.1f}%  
+    • Network Strength Percentile: {relationships_percentile:.1f}%  
+    • Investment Classification: {tier}
+    """)
+
 
 
 
