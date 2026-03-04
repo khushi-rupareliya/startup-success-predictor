@@ -193,6 +193,18 @@ usp_defined_value = 1 if usp_defined == "Yes" else 0
 with tab1:
 
     if st.button("🔍 Run Startup X-Ray Analysis"):
+        
+        probability = model.predict_proba(input_df)[0][1]
+        confidence = probability * 100
+
+        gauge = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=confidence,
+            number={'suffix': "%"},
+            title={'text': "Startup Success Score"}
+        ))
+
+        st.plotly_chart(gauge)
 
         input_dict = dict.fromkeys(feature_list, 0)
 
@@ -510,6 +522,7 @@ st.write(f"""
 • Network Strength Percentile: {relationships_percentile:.1f}%  
 • Investment Classification: {tier}
 """)
+
 
 
 
