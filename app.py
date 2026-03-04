@@ -39,6 +39,8 @@ st.markdown("""
 try:
     model = joblib.load("startup_success_model.pkl")
     feature_list = joblib.load("model_features.pkl")
+    confidence = 0
+    risk_percent = 0
 except Exception:
     st.error("❌ Model files missing.")
     st.stop()
@@ -522,6 +524,7 @@ st.write(f"""
 • Network Strength Percentile: {relationships_percentile:.1f}%  
 • Investment Classification: {tier}
 """)
+
 
 
 
