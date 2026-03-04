@@ -196,30 +196,28 @@ with tab1:
 
         input_dict = dict.fromkeys(feature_list, 0)
 
-    input_dict["relationships"] = relationships
-    input_dict["funding_total_usd"] = funding_total_usd
-    input_dict["age_last_milestone_year"] = age_last_milestone_year
-    input_dict["age_last_funding_year"] = age_last_funding_year
-    input_dict["age_first_funding_year"] = age_first_funding_year
-    input_dict["age_first_milestone_year"] = age_first_milestone_year
-    input_dict["avg_participants"] = avg_participants
-    input_dict["milestones"] = milestones
-    input_dict["funding_rounds"] = funding_rounds
-    input_dict["is_top500"] = is_top500_value
-    input_dict["team_size"] = team_size
-    input_dict["usp_defined"] = usp_defined_value
+        input_dict["relationships"] = relationships
+        input_dict["funding_total_usd"] = funding_total_usd
+        input_dict["age_last_milestone_year"] = age_last_milestone_year
+        input_dict["age_last_funding_year"] = age_last_funding_year
+        input_dict["age_first_funding_year"] = age_first_funding_year
+        input_dict["age_first_milestone_year"] = age_first_milestone_year
+        input_dict["avg_participants"] = avg_participants
+        input_dict["milestones"] = milestones
+        input_dict["funding_rounds"] = funding_rounds
+        input_dict["is_top500"] = is_top500_value
+        input_dict["team_size"] = team_size
+        input_dict["usp_defined"] = usp_defined_value
 
-   industry_column = f"is_{industry_type.lower()}"
-    if industry_column in input_dict:
-        input_dict[industry_column] = 1
-
-    market_column = f"market_size_{market_size}"
-    if market_column in input_dict:
-        input_dict[market_column] = 1
-
-    stage_column = f"startup_stage_{startup_stage}"
-    if stage_column in input_dict:
-        input_dict[stage_column] = 1
+        industry_column = f"is_{industry_type.lower()}"
+        if industry_column in input_dict:
+            input_dict[industry_column] = 1
+        market_column = f"market_size_{market_size}"
+        if market_column in input_dict:
+            input_dict[market_column] = 1
+        stage_column = f"startup_stage_{startup_stage}"
+        if stage_column in input_dict:
+            input_dict[stage_column] = 1
 
     input_df = pd.DataFrame([input_dict])
 
@@ -506,4 +504,5 @@ st.plotly_chart(radar, use_container_width=True)
         • Network Strength Percentile: {relationships_percentile:.1f}%  
         • Investment Classification: {tier}
         """)
+
 
