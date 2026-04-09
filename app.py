@@ -275,55 +275,158 @@ with tab2:
 
     st.subheader("🧪 Startup Scenario Simulator")
 
-    funding_increase = st.slider(
-        "Increase Funding (%)",
-        0, 100, 20
-    )
+    st.markdown("### 🎛 Adjust Key Factors")
 
-    milestone_increase = st.slider(
-        "Increase Milestones",
-        0, 10, 2
-    )
+    # 👇 Only tweak a few important variables
+    funding_change = st.slider("Change Funding (%)", -50, 200, 0)
+    milestone_change = st.slider("Change Milestones", -5, 10, 0)
+    relationship_change = st.slider("Change Partnerships", -5, 10, 0)
 
-if st.button("Run Simulation"):
+    if st.button("🚀 Run Simulation"):
 
-    if "input_df" not in locals():
-        st.warning("Run the Startup Diagnostic first.")
-    else:
-        simulated_input = input_df.copy()
+        # 👇 Start from ORIGINAL input
+        sim_dict = dict.fromkeys(feature_list, 0)
 
-        simulated_input["funding_total_usd"] *= (1 + funding_increase/100)
-        simulated_input["milestones"] += milestone_increase
+        sim_dict["relationships"] = relationships + relationship_change
+        sim_dict["funding_total_usd"] = funding_total_usd * (1 + funding_change / 100)
+        sim_dict["age_last_milestone_year"] = age_last_milestone_year
+        sim_dict["age_last_funding_year"] = age_last_funding_year
+        sim_dict["age_first_funding_year"] = age_first_funding_year
+        sim_dict["age_first_milestone_year"] = age_first_milestone_year
+        sim_dict["avg_participants"] = avg_participants
+        sim_dict["milestones"] = milestones + milestone_change
+        sim_dict["funding_rounds"] = funding_rounds
+        sim_dict["is_top500"] = is_top500_value
+        sim_dict["team_size"] = team_size
+        sim_dict["usp_defined"] = usp_defined_value
 
-        simulated_prob = model.predict_proba(simulated_input)[0][1]
+        # Encoding stays SAME
+        industry_column = f"is_{industry_type.lower()}"
+        if industry_column in sim_dict:
+            sim_dict[industry_column] = 1
+
+        market_column = f"market_size_{market_size}"
+        if market_column in sim_dict:
+            sim_dict[market_column] = 1
+
+        stage_column = f"startup_stage_{startup_stage}"
+        if stage_column in sim_dict:
+            sim_dict[stage_column] = 1
+
+        sim_df = pd.DataFrame([sim_dict])
+
+        sim_prob = model.predict_proba(sim_df)[0][1]
 
         st.metric(
-            "Simulated Success Probability",
-            f"{simulated_prob*100:.2f}%"
+            "📈 Simulated Success Probability",
+            f"{sim_prob * 100:.2f}%"
         )
         
-with tab4:
+with tab3:
 
-    st.subheader("📈 Startup Ecosystem Insights")
+    st.subheader("📈 Startup Ecosystem Intelligence")
+
+    st.markdown("Gain deep insights into what separates successful startups from failed ones.")
+
+    # --------------------------------------------------
+    # 📊 1. Success vs Failure Overview
+    # --------------------------------------------------
+    st.markdown("### 🏁 Market Outcome Distribution")
 
     outcome_counts = df["status"].value_counts()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("Total Startups", len(df))
+
+    with col2:
+        success_rate = (outcome_counts.get("acquired", 0) / len(df)) * 100
+        st.metric("Success Rate", f"{success_rate:.1f}%")
 
     pie = go.Figure(data=[
         go.Pie(
             labels=outcome_counts.index,
             values=outcome_counts.values,
-            hole=0.4
+            hole=0.5
         )
     ])
 
-    pie.update_layout(
+    pie.update_layout(paper_bgcolor="#0E1117", font=dict(color="white"))
+    st.plotly_chart(pie, use_container_width=True)
+
+    # --------------------------------------------------
+    # 💰 2. Funding Insights
+    # --------------------------------------------------
+    st.markdown("### 💰 Funding Intelligence")
+
+    col1, col2 = st.columns(2)
+
+    avg_success_funding = successful_df["funding_total_usd"].mean()
+    avg_failed_funding = failed_df["funding_total_usd"].mean()
+
+    col1.metric("Avg Funding (Successful)", f"${avg_success_funding:,.0f}")
+    col2.metric("Avg Funding (Failed)", f"${avg_failed_funding:,.0f}")
+
+    funding_bar = go.Figure()
+    funding_bar.add_trace(go.Bar(
+        x=["Successful", "Failed"],
+        y=[avg_success_funding, avg_failed_funding]
+    ))
+
+    funding_bar.update_layout(
         paper_bgcolor="#0E1117",
         font=dict(color="white")
     )
 
-    st.plotly_chart(pie, use_container_width=True)
+    st.plotly_chart(funding_bar, use_container_width=True)
 
-    st.markdown("### Funding Distribution")
+    # --------------------------------------------------
+    # 🚀 3. Execution (Milestones)
+    # --------------------------------------------------
+    st.markdown("### 🚀 Execution Strength")
+
+    avg_success_milestones = successful_df["milestones"].mean()
+    avg_failed_milestones = failed_df["milestones"].mean()
+
+    milestone_bar = go.Figure()
+    milestone_bar.add_trace(go.Bar(
+        x=["Successful", "Failed"],
+        y=[avg_success_milestones, avg_failed_milestones]
+    ))
+
+    milestone_bar.update_layout(
+        paper_bgcolor="#0E1117",
+        font=dict(color="white")
+    )
+
+    st.plotly_chart(milestone_bar, use_container_width=True)
+
+    # --------------------------------------------------
+    # 🤝 4. Network Strength
+    # --------------------------------------------------
+    st.markdown("### 🤝 Network & Partnerships")
+
+    avg_success_rel = successful_df["relationships"].mean()
+    avg_failed_rel = failed_df["relationships"].mean()
+
+    rel_bar = go.Figure()
+    rel_bar.add_trace(go.Bar(
+        x=["Successful", "Failed"],
+        y=[avg_success_rel, avg_failed_rel]
+    ))
+
+    rel_bar.update_layout(
+        paper_bgcolor="#0E1117",
+        font=dict(color="white")
+    )
+
+    st.plotly_chart(rel_bar, use_container_width=True)
+
+    # --------------------------------------------------
+    # 📊 5. Distribution Analysis
+    # --------------------------------------------------
+    st.markdown("### 📊 Funding Distribution Across Market")
 
     hist = go.Figure()
     hist.add_trace(go.Histogram(x=df["funding_total_usd"]))
@@ -334,6 +437,24 @@ with tab4:
     )
 
     st.plotly_chart(hist, use_container_width=True)
+
+    # --------------------------------------------------
+    # 🧠 6. AI Insights Summary (VERY IMPORTANT)
+    # --------------------------------------------------
+    st.markdown("### 🧠 Key Market Insights")
+
+    st.info(f"""
+📊 Key Observations from Market Data:
+
+• Successful startups raise ~{avg_success_funding/1e6:.1f}M USD on average  
+• Failed startups raise ~{avg_failed_funding/1e6:.1f}M USD  
+
+• Execution matters: successful startups achieve ~{avg_success_milestones:.1f} milestones vs {avg_failed_milestones:.1f}  
+
+• Strong networks correlate with success: {avg_success_rel:.1f} vs {avg_failed_rel:.1f} partnerships  
+
+💡 Insight: Funding alone is not enough — execution + network strength are critical drivers.
+""")
 
 with tab5:
 
