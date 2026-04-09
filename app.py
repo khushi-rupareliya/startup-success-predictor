@@ -322,7 +322,7 @@ with tab2:
             f"{sim_prob * 100:.2f}%"
         )
         
-with tab3:
+with tab4:
 
     st.subheader("📈 Startup Ecosystem Intelligence")
 
