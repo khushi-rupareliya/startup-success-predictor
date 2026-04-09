@@ -68,10 +68,9 @@ st.divider()
 # --------------------------------------------------
 # Platform Navigation
 # --------------------------------------------------
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab4, tab5 = st.tabs([
     "🔎 Startup Diagnostic",
     "🧪 Scenario Simulator",
-    "📊 Model Benchmark",
     "📈 Market Insights",
     "📄 X-Ray Report"
 ])
@@ -302,36 +301,7 @@ if st.button("Run Simulation"):
             "Simulated Success Probability",
             f"{simulated_prob*100:.2f}%"
         )
-
-with tab3:
-
-    st.subheader("📊 Model Performance Benchmark")
-
-    benchmark = pd.DataFrame({
-        "Model": ["Logistic Regression", "Random Forest", "XGBoost"],
-        "Accuracy": [0.71, 0.80, 0.82],
-        "Precision": [0.69, 0.78, 0.80],
-        "Recall": [0.72, 0.81, 0.83],
-        "F1 Score": [0.70, 0.79, 0.81]
-    })
-
-    st.dataframe(benchmark, use_container_width=True)
-
-    fig = go.Figure()
-
-    fig.add_trace(go.Bar(
-        x=benchmark["Model"],
-        y=benchmark["Accuracy"],
-        marker_color="#00F5A0"
-    ))
-
-    fig.update_layout(
-        paper_bgcolor="#0E1117",
-        font=dict(color="white")
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
+        
 with tab4:
 
     st.subheader("📈 Startup Ecosystem Insights")
